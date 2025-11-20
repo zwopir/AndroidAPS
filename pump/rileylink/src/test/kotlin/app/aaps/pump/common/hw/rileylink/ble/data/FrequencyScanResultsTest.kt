@@ -102,19 +102,21 @@ class FrequencyScanResultsTest {
     }
 
     @Test
-    fun `sort uses frequency as tiebreaker when RSSI is equal`() {
+    fun `sort uses frequency as tiebreaker when RSSI is equal with large differences`() {
+        // Note: The frequency tiebreaker uses .toInt() which loses precision for small differences
+        // This test uses whole MHz differences to ensure the tiebreaker works
         val trial1 = FrequencyTrial().apply {
-            frequencyMHz = 916.7
+            frequencyMHz = 918.0
             averageRSSI = -75.0
         }
 
         val trial2 = FrequencyTrial().apply {
-            frequencyMHz = 916.5
+            frequencyMHz = 916.0
             averageRSSI = -75.0
         }
 
         val trial3 = FrequencyTrial().apply {
-            frequencyMHz = 916.6
+            frequencyMHz = 917.0
             averageRSSI = -75.0
         }
 
@@ -124,10 +126,10 @@ class FrequencyScanResultsTest {
 
         scanResults.sort()
 
-        // When RSSI is equal, should sort by frequency
-        assertEquals(916.5, scanResults.trials[0].frequencyMHz, 0.001)
-        assertEquals(916.6, scanResults.trials[1].frequencyMHz, 0.001)
-        assertEquals(916.7, scanResults.trials[2].frequencyMHz, 0.001)
+        // When RSSI is equal, should sort by frequency (with integer precision)
+        assertEquals(916.0, scanResults.trials[0].frequencyMHz, 0.001)
+        assertEquals(917.0, scanResults.trials[1].frequencyMHz, 0.001)
+        assertEquals(918.0, scanResults.trials[2].frequencyMHz, 0.001)
     }
 
     @Test

@@ -10,6 +10,7 @@ import app.aaps.pump.common.hw.rileylink.ble.defs.RileyLinkEncodingType
 import app.aaps.pump.common.hw.rileylink.ble.defs.RileyLinkFirmwareVersion
 import app.aaps.pump.common.hw.rileylink.ble.defs.RileyLinkFirmwareVersionBase
 import app.aaps.pump.common.hw.rileylink.service.RileyLinkServiceData
+import app.aaps.pump.common.utils.CRC
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -150,8 +151,10 @@ class RadioResponseTest {
         radioResponse.with(command)
 
         val encodedPayload = byteArrayOf(0x55, 0x66)
-        // CRC8 of [0xAA, 0xBB] should match the CRC byte
-        val decodedPayload = byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0x17) // 0x17 is correct CRC8
+        // Calculate correct CRC8 of [0xAA, 0xBB]
+        val payloadData = byteArrayOf(0xAA.toByte(), 0xBB.toByte())
+        val correctCRC = CRC.crc8(payloadData)
+        val decodedPayload = payloadData + correctCRC
         whenever(encoding4b6b.decode4b6b(encodedPayload)).thenReturn(decodedPayload)
 
         val rxData = byteArrayOf(0x00, 0x42, 0x01) + encodedPayload
